@@ -15,7 +15,11 @@ export class InfractionSyncValidatorService {
 
     // Convert image to base64 to send to OpenAI Vision
     const base64Image = file.buffer.toString('base64');
-    const imageUrl = `data:${file.mimetype};base64,${base64Image}`;
+    let mimeType = file.mimetype;
+    if (!mimeType || mimeType === 'application/octet-stream') {
+      mimeType = 'image/jpeg';
+    }
+    const imageUrl = `data:${mimeType};base64,${base64Image}`;
 
     const response = await this.aiProvider.generateResponse([
       {

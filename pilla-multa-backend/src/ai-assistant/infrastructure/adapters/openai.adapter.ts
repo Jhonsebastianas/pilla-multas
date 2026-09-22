@@ -21,18 +21,21 @@ export class OpenAiAdapter implements IAiProvider {
       // Initialize with dummy to avoid crashes, actual calls will fail
       this.openai = new OpenAI({ apiKey: 'dummy' });
     } else {
-      const baseURL =
-        this.configService.get<string>('LITELLM_URL') ||
-        'http://localhost:4000/v1';
-      // LiteLLM requires its own Virtual Key or Master Key to authenticate the proxy request, NOT the OpenAI key.
-      const proxyKey =
-        this.configService.get<string>('LITELLM_MASTER_KEY') ||
-        'sk-1234-master-key';
-
-      this.openai = new OpenAI({
-        apiKey: proxyKey,
-        baseURL,
-      });
+      const litellmUrl = this.configService.get<string>('LITELLM_URL');
+      
+      if (litellmUrl) {
+        // Usa el proxy LiteLLM
+        const proxyKey = this.configService.get<string>('LITELLM_MASTER_KEY') || 'sk-1234-master-key';
+        this.openai = new OpenAI({
+          apiKey: proxyKey,
+          baseURL: litellmUrl,
+        });
+      } else {
+        // Usa conexión directa a OpenAI
+        this.openai = new OpenAI({
+          apiKey: apiKey,
+        });
+      }
     }
   }
 
